@@ -1,33 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web.Resource;
 
 namespace document.Controllers;
 
+[Authorize] // Requires ANY authenticated user
 [ApiController]
 [Route("[controller]")]
-public class WeatherForecastController : ControllerBase
+public class DocumentsController : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+    static readonly string[] scopeRequiredByApi = new string[] { "Documents.ReadWrite" };
 
-    private readonly ILogger<WeatherForecastController> _logger;
-
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    [HttpGet]
+    public IActionResult Get()
     {
-        _logger = logger;
-    }
+        HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
-    {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        })
-        .ToArray();
+        return Ok(new string[] { "Q3 Financial Report.pdf", "Project Phoenix Plan.docx" });
     }
 }
-
